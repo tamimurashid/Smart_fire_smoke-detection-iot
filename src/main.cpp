@@ -10,7 +10,7 @@
 DHT dht(DHTPIN, DHTTYPE);  // Now correctly defined
 
 void setup() {
-    Serial.begin(115200);
+    Serial.begin(9600);
     dht.begin();
     pinMode(FLAME_SENSOR, INPUT);
     pinMode(SMOKE_SENSOR, INPUT);

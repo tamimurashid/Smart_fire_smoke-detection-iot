@@ -10,6 +10,8 @@
             "includePath": [
                 "/Users/talianrobotics/Documents/PlatformIO/Projects/Smart_fire_smoke-detection-iot-main/include",
                 "/Users/talianrobotics/Documents/PlatformIO/Projects/Smart_fire_smoke-detection-iot-main/src",
+                "/Users/talianrobotics/Documents/PlatformIO/Projects/Smart_fire_smoke-detection-iot-main/.pio/libdeps/esp8285/DHT sensor library",
+                "/Users/talianrobotics/Documents/PlatformIO/Projects/Smart_fire_smoke-detection-iot-main/.pio/libdeps/esp8285/Adafruit Unified Sensor",
                 "/Users/talianrobotics/Documents/PlatformIO/Projects/Smart_fire_smoke-detection-iot-main/.pio/libdeps/esp8285/IotWebConf/src",
                 "/Users/talianrobotics/.platformio/packages/framework-arduinoespressif8266/libraries/Wire",
                 "/Users/talianrobotics/.platformio/packages/framework-arduinoespressif8266/libraries/Servo/src",
@@ -63,6 +65,8 @@
                 "path": [
                     "/Users/talianrobotics/Documents/PlatformIO/Projects/Smart_fire_smoke-detection-iot-main/include",
                     "/Users/talianrobotics/Documents/PlatformIO/Projects/Smart_fire_smoke-detection-iot-main/src",
+                    "/Users/talianrobotics/Documents/PlatformIO/Projects/Smart_fire_smoke-detection-iot-main/.pio/libdeps/esp8285/DHT sensor library",
+                    "/Users/talianrobotics/Documents/PlatformIO/Projects/Smart_fire_smoke-detection-iot-main/.pio/libdeps/esp8285/Adafruit Unified Sensor",
                     "/Users/talianrobotics/Documents/PlatformIO/Projects/Smart_fire_smoke-detection-iot-main/.pio/libdeps/esp8285/IotWebConf/src",
                     "/Users/talianrobotics/.platformio/packages/framework-arduinoespressif8266/libraries/Wire",
                     "/Users/talianrobotics/.platformio/packages/framework-arduinoespressif8266/libraries/Servo/src",
