@@ -1,3 +1,5 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
 #include <ESP8266WiFi.h>
 #include <DHT.h>
 #include <ESP8266HTTPClient.h>
@@ -15,24 +17,37 @@ const char* server = "http://your-server.com/receive_data.php"; // Your PHP scri
 DHT dht(DHTPIN, DHTTYPE);
 WiFiClient client;
 HTTPClient http;
+LiquidCrystal_I2C lcd(0x27, 16, 2); // I2C address 0x27 for 16x2 LCD
 
 void setup() {
     Serial.begin(9600);
     dht.begin();
-    
+    Wire.begin(D6, D7);
     pinMode(FLAME_SENSOR, INPUT);
     pinMode(SMOKE_SENSOR, INPUT);
     pinMode(BUZZER, OUTPUT);
     digitalWrite(BUZZER, LOW);
 
+    lcd.begin(16, 2);  // Correctly initializes a 16x2 LCD
+    lcd.backlight();    // Turn on LCD backlight
+    lcd.setCursor(0, 0);
+    lcd.print("Smart Fire Alarm");
+
     // Connect to WiFi
     WiFi.begin(ssid, password);
     Serial.print("Connecting to WiFi");
+    lcd.setCursor(0, 1);
+    lcd.print("Connecting...");
+    
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
         Serial.print(".");
     }
+    
     Serial.println("\nConnected to WiFi!");
+    lcd.setCursor(0, 1);
+    lcd.print("WiFi Connected ");
+    delay(1000);
 }
 
 void loop() {
@@ -49,19 +64,38 @@ void loop() {
     // Fire detection logic
     String status = "Normal";
     if (temperature > 40 && flameValue == 0) {
-        status = "Fire Detected";
+        status = "🔥 Fire Detected!";
         digitalWrite(BUZZER, HIGH);
     } else if (temperature > 40 && flameValue == 1) {
-        status = "High Temperature, No Fire";
+        status = "High Temp, No Fire";
         digitalWrite(BUZZER, LOW);
     } else if (temperature < 40 && flameValue == 0) {
-        status = "Possible Smoke or Gas Leak";
+        status = "Smoke/Gas Leak!";
         digitalWrite(BUZZER, HIGH);
     } else if (temperature > 30) {
         status = "High Temperature";
     } else if (temperature < 20) {
         status = "Very Cold";
     }
+
+    // Display data on LCD
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Temp: "); lcd.print(temperature); lcd.print("C");
+    
+    lcd.setCursor(0, 1);
+    lcd.print("Smoke: "); lcd.print(smokeValue);
+
+    delay(2000); // Display for 2 seconds
+
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Flame: ");
+    lcd.print(flameValue == 0 ? "🔥" : "✅ No Fire");
+
+    lcd.setCursor(0, 1);
+    lcd.print("Status: ");
+    lcd.print(status);
 
     // Send data to the web server
     if (WiFi.status() == WL_CONNECTED) {
@@ -74,13 +108,10 @@ void loop() {
                           "&smoke=" + String(smokeValue) +
                           "&status=" + status;
 
-        // int httpCode =
-         http.POST(postData);
-        String payload = http.getString();
-        // Serial.println("Server Response: " + payload);
-
+        http.POST(postData);
+        http.getString();
         http.end();
     }
 
-    delay(1000); // Send data every 5 seconds
+    delay(5000); // Send data every 5 seconds
 }
