@@ -17,7 +17,7 @@ const char* server = "http://your-server.com/receive_data.php"; // Your PHP scri
 DHT dht(DHTPIN, DHTTYPE);
 WiFiClient client;
 HTTPClient http;
-LiquidCrystal_I2C lcd(0x27, 16, 2); // I2C address 0x27 for 16x2 LCD
+LiquidCrystal_I2C lcd(0x27, 16, 2);  // I2C address 0x27 for 16x2 LCD
 
 void setup() {
     Serial.begin(9600);
@@ -91,7 +91,7 @@ void loop() {
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Flame: ");
-    lcd.print(flameValue == 0 ? "🔥" : "✅ No Fire");
+    lcd.print(flameValue == 0 ? "" : "No Fire");
 
     lcd.setCursor(0, 1);
     lcd.print("Status: ");
