@@ -12,13 +12,21 @@
 
 const char* ssid = "Reindeer";  // Replace with your WiFi SSID
 const char* password = "200120022003";  // Replace with your WiFi Password
-const char* server = "http://your-server.com/receive_data.php"; // Your PHP script URL
+const char* server = "http://192.168.10.103:8888/smoke_web_dashboard-main/server/controller.php";
 
 DHT dht(DHTPIN, DHTTYPE);
 WiFiClient client;
 HTTPClient http;
 LiquidCrystal_I2C lcd(0x27, 16, 2);  // I2C address 0x27 for 16x2 LCD
-
+void alarm_alert(int delay1, int delay2, int time){
+    int time;
+    for(int i = 0; i < time; i++ ){
+        digitalWrite(BUZZER, HIGH);
+        delay(delay1);
+        digitalWrite(BUZZER, LOW);
+        delay(delay2);
+    }
+}
 void setup() {
     Serial.begin(9600);
     dht.begin();
@@ -66,12 +74,15 @@ void loop() {
     if (temperature > 40 && flameValue == 0) {
         status = "🔥 Fire Detected!";
         digitalWrite(BUZZER, HIGH);
+        delay(1000);
+        digitalWrite(BUZZER, LOW);
+        delay(1000);
     } else if (temperature > 40 && flameValue == 1) {
         status = "High Temp, No Fire";
         digitalWrite(BUZZER, LOW);
     } else if (temperature < 40 && flameValue == 0) {
-        status = "Smoke/Gas Leak!";
-        digitalWrite(BUZZER, HIGH);
+        status = "Presence of flame / ultraviolert";
+        // digitalWrite(BUZZER, HIGH);
     } else if (temperature > 30) {
         status = "High Temperature";
     } else if (temperature < 20) {
@@ -91,7 +102,7 @@ void loop() {
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Flame: ");
-    lcd.print(flameValue == 0 ? "" : "No Fire");
+    lcd.print(flameValue == 0 && temperature > 40  ? "Fire detected" : "No Fire");
 
     lcd.setCursor(0, 1);
     lcd.print("Status: ");
@@ -113,5 +124,5 @@ void loop() {
         http.end();
     }
 
-    delay(5000); // Send data every 5 seconds
+    delay(1000); // Send data every 5 seconds
 }
