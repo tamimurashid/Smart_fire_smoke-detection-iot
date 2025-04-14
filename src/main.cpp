@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <ESP8266WiFi.h>
@@ -19,7 +20,6 @@ WiFiClient client;
 HTTPClient http;
 LiquidCrystal_I2C lcd(0x27, 16, 2);  // I2C address 0x27 for 16x2 LCD
 void alarm_alert(int delay1, int delay2, int time){
-    int time;
     for(int i = 0; i < time; i++ ){
         digitalWrite(BUZZER, HIGH);
         delay(delay1);
@@ -27,6 +27,29 @@ void alarm_alert(int delay1, int delay2, int time){
         delay(delay2);
     }
 }
+
+void sendSMSAlert(String message) {
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient smsClient;
+    smsClient.begin("https://sms.beem.africa/v1/send");
+
+    smsClient.addHeader("Content-Type", "application/json");
+    smsClient.addHeader("Authorization", "Bearer YOUR_BEEM_API_KEY");  // Replace with your Beam API key
+
+    String jsonPayload = "{\"source_addr\": \"AMORESYS\", \"schedule_time\": \"\", \"encoding\": \"0\", \"message\": \"" + message + "\", \"recipients\": [{\"recipient_id\": \"1\", \"dest_addr\": \"+255700123456\"}]}";
+
+    int httpCode = smsClient.POST(jsonPayload);
+    String response = smsClient.getString();
+
+    Serial.println("SMS Response Code: " + String(httpCode));
+    Serial.println("SMS Response Body: " + response);
+    smsClient.end();
+  } else {
+    Serial.println("WiFi not connected, SMS not sent");
+  }
+}
+
+
 void setup() {
     Serial.begin(9600);
     dht.begin();
@@ -73,10 +96,8 @@ void loop() {
     String status = "Normal";
     if (temperature > 40 && flameValue == 0) {
         status = "🔥 Fire Detected!";
-        digitalWrite(BUZZER, HIGH);
-        delay(1000);
-        digitalWrite(BUZZER, LOW);
-        delay(1000);
+        sendSMSAlert("🔥 FIRE ALERT! Temperature is " + String(temperature) + "C with flame detected.");
+        alarm_alert(100, 100, 10);
     } else if (temperature > 40 && flameValue == 1) {
         status = "High Temp, No Fire";
         digitalWrite(BUZZER, LOW);
@@ -87,6 +108,12 @@ void loop() {
         status = "High Temperature";
     } else if (temperature < 20) {
         status = "Very Cold";
+    } else if(smokeValue > 550 && smokeValue < 650){
+        status = "Smoke or Gas detected .";
+        alarm_alert(1000, 1000, 10);
+    } else if(smokeValue > 650){
+        status = "Huge smoke or gas leakage detected .";
+        alarm_alert(500, 500, 10);
     }
 
     // Display data on LCD
