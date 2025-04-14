@@ -4,6 +4,7 @@
 #include <ESP8266WiFi.h>
 #include <DHT.h>
 #include <ESP8266HTTPClient.h>
+#include <WiFiClientSecure.h>
 
 #define DHTPIN D1        // DHT11 sensor pin
 #define DHTTYPE DHT11    // DHT sensor type
@@ -30,13 +31,16 @@ void alarm_alert(int delay1, int delay2, int time){
 
 void sendSMSAlert(String message) {
   if (WiFi.status() == WL_CONNECTED) {
+    WiFiClientSecure secureClient;
+    secureClient.setInsecure(); // Accept all certificates (for testing only)
+
     HTTPClient smsClient;
-    smsClient.begin("https://sms.beem.africa/v1/send");
+    smsClient.begin(secureClient, "https://apisms.beem.africa/v1/send");
 
     smsClient.addHeader("Content-Type", "application/json");
-    smsClient.addHeader("Authorization", "Bearer YOUR_BEEM_API_KEY");  // Replace with your Beam API key
+    smsClient.addHeader("Authorization", "Bearer a952307b58c9dab8");  // Add "Bearer " before your API key
 
-    String jsonPayload = "{\"source_addr\": \"AMORESYS\", \"schedule_time\": \"\", \"encoding\": \"0\", \"message\": \"" + message + "\", \"recipients\": [{\"recipient_id\": \"1\", \"dest_addr\": \"+255700123456\"}]}";
+    String jsonPayload = "{\"source_addr\": \"AMORESYS\", \"schedule_time\": \"\", \"encoding\": \"0\", \"message\": \"" + message + "\", \"recipients\": [{\"recipient_id\": \"1\", \"dest_addr\": \"+255768857064\"}]}";
 
     int httpCode = smsClient.POST(jsonPayload);
     String response = smsClient.getString();
