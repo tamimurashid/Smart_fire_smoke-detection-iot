@@ -1,3 +1,8 @@
+#define BLYNK_TEMPLATE_ID "TMPL2VEcI8xU6"
+#define BLYNK_TEMPLATE_NAME "AmoreSystem"
+#define BLYNK_AUTH_TOKEN "6B0_1ZHuKtm9LiVLaL1XWhXJvJ2I5ApE"
+
+
 #include <Arduino.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
@@ -5,6 +10,8 @@
 #include <DHT.h>
 #include <ESP8266HTTPClient.h>
 #include <WiFiClientSecure.h>
+#include <BlynkSimpleEsp8266.h>
+
 
 #define DHTPIN D1        // DHT11 sensor pin
 #define DHTTYPE DHT11    // DHT sensor type
@@ -15,6 +22,13 @@
 const char* ssid = "Reindeer";  // Replace with your WiFi SSID
 const char* password = "200120022003";  // Replace with your WiFi Password
 const char* server = "http://192.168.10.103:8888/smoke_web_dashboard-main/server/controller.php";
+
+char auth[] = BLYNK_AUTH_TOKEN;
+BlynkTimer timer;
+bool sentAlert = false;
+
+
+
 
 DHT dht(DHTPIN, DHTTYPE);
 WiFiClient client;
@@ -28,31 +42,6 @@ void alarm_alert(int delay1, int delay2, int time){
         delay(delay2);
     }
 }
-
-void sendSMSAlert(String message) {
-  if (WiFi.status() == WL_CONNECTED) {
-    WiFiClientSecure secureClient;
-    secureClient.setInsecure(); // Accept all certificates (for testing only)
-
-    HTTPClient smsClient;
-    smsClient.begin(secureClient, "https://apisms.beem.africa/v1/send");
-
-    smsClient.addHeader("Content-Type", "application/json");
-    smsClient.addHeader("Authorization", "Bearer a952307b58c9dab8");  // Add "Bearer " before your API key
-
-    String jsonPayload = "{\"source_addr\": \"AMORESYS\", \"schedule_time\": \"\", \"encoding\": \"0\", \"message\": \"" + message + "\", \"recipients\": [{\"recipient_id\": \"1\", \"dest_addr\": \"+255768857064\"}]}";
-
-    int httpCode = smsClient.POST(jsonPayload);
-    String response = smsClient.getString();
-
-    Serial.println("SMS Response Code: " + String(httpCode));
-    Serial.println("SMS Response Body: " + response);
-    smsClient.end();
-  } else {
-    Serial.println("WiFi not connected, SMS not sent");
-  }
-}
-
 
 void setup() {
     Serial.begin(9600);
@@ -85,7 +74,21 @@ void setup() {
     delay(1000);
 }
 
+void sendToBlynk() {
+  float temperature = dht.readTemperature();
+  float humidity = dht.readHumidity();
+  int flame = analogRead(FLAME_SENSOR);
+  int smoke = analogRead(SMOKE_SENSOR);
+
+  Blynk.virtualWrite(V0, temperature);
+  Blynk.virtualWrite(V1, humidity);
+  Blynk.virtualWrite(V2, flame);
+  Blynk.virtualWrite(V3, smoke);
+}
+
 void loop() {
+    Blynk.run();
+    timer.run();
     float temperature = dht.readTemperature();
     float humidity = dht.readHumidity();
     int flameValue = digitalRead(FLAME_SENSOR); // 1 = No Fire, 0 = Fire
@@ -100,7 +103,6 @@ void loop() {
     String status = "Normal";
     if (temperature > 40 && flameValue == 0) {
         status = "🔥 Fire Detected!";
-        sendSMSAlert("🔥 FIRE ALERT! Temperature is " + String(temperature) + "C with flame detected.");
         alarm_alert(100, 100, 10);
     } else if (temperature > 40 && flameValue == 1) {
         status = "High Temp, No Fire";
