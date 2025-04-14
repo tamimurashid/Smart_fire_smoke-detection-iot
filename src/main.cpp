@@ -1,7 +1,6 @@
-#define BLYNK_TEMPLATE_ID "TMPL2VEcI8xU6"
-#define BLYNK_TEMPLATE_NAME "AmoreSystem"
-#define BLYNK_AUTH_TOKEN "6B0_1ZHuKtm9LiVLaL1XWhXJvJ2I5ApE"
-
+#define BLYNK_TEMPLATE_ID "TMPL2zBXSEynG"
+#define BLYNK_TEMPLATE_NAME "Smoke Sensor"
+#define BLYNK_AUTH_TOKEN "1oUnUVdlQnL20CqZ1QDOjky64couZY7I"
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -101,6 +100,7 @@ void loop() {
 
     // Fire detection logic
     String status = "Normal";
+
     if (temperature > 40 && flameValue == 0) {
         status = "🔥 Fire Detected!";
         alarm_alert(100, 100, 10);
